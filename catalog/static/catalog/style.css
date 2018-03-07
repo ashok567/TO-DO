@@ -1,0 +1,19 @@
+form {
+    display: inline-block;
+    display: -moz-inline-stack;
+}
+.form-group {
+    text-align: center;
+    padding-bottom: 25px;
+}
+
+#todo {
+    margin: 0 auto;
+    width: 250px;
+}
+
+.listcheck {
+  width : 30px;
+  position: relative;
+}
+

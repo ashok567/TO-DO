@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<title>ToDo</title>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap-theme.min.css">
+<link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+<script type="text/javascript"> window.CSRF_TOKEN = "{{ csrf_token }}"; </script>
+
+
+{% load static %}
+<link rel="stylesheet" href="{% static 'catalog/style.css'%}">
+<script>
+	$(document).ready(function() {
+    $.ajax({
+        type: 'GET',
+        url: '{% url 'apilist' %}',
+        success: function(data){
+           for (var i =0; i< data.length; i++)
+               {
+                $('.list').append($('<input>').attr({
+                    type: 'checkbox', class: 'listcheck', id: 'listcheck'+(i+1), value: data[i].id })).append(data[i].text+ "<br>");
+                 }
+           }
+    });
+});
+
+    $(document).ready(function(){
+    $("#add").click(function(event){
+        var text = document.getElementById('text').value
+        var todo = {'text': text, 'done': false}
+        	$.ajax({
+                url:'{% url 'apilist' %}',
+                type:'PUT',
+                headers:{
+                'X-CSRFToken':CSRF_TOKEN,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+               },
+                data: JSON.stringify(todo),
+                success: function(data){
+                  $('.list').append($('<input>').attr({
+                    type: 'checkbox', class: "listcheck", id: 'listcheck', value: data.id})).append(data.text+ "<br>");
+                  $('#text').val('');
+                  },
+                error: function (request, status, error) {
+        			console.log(request.responseText);
+               }
+        });
+        event.preventDefault();
+        return false;
+    });
+});
+
+    $(document).ready(function(){
+        $("#done").click(function(event){
+            if ($(".listcheck").is(":checked")){
+                var check = [];
+                $(".listcheck:checked").each(function () {
+                    check.push(Number($(this).val()));
+                });
+
+                for(var i=0; i<check.length; i++){
+                    var pk = check[i]
+                    console.log(pk);
+                    $.ajax({
+                        url : '{% url 'apidetail' 999 %}'.replace (999, pk),
+                        type : 'DELETE',
+                        headers:{
+                        'X-CSRFToken':CSRF_TOKEN,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                        success : function(response) {
+
+                        	location.reload();
+                    },
+                        error: function (request, status, error) {
+                        	console.log(request.responseText);
+                    }
+
+                });
+            }
+        }
+            else alert("Please select any item form todo list")
+        event.preventDefault();
+        return false;
+    });
+});
+
+</script>
+</head>
+<body>
+    <div class="form-group">
+      <h1>To-Do <small>List</small></h1>
+    <form role="form">
+        <input type="text" class="form-control" placeholder="Your Task" name="task" id="text" required>
+    </form>
+    <button type="button" class="btn btn btn-primary" id="add">Add</button>
+    </div>
+    <div></div>
+    <div id="todo">
+    <span class="list"></span><br>
+    <button id="done" class="btn btn btn-primary">Check</button>
+    </div>
+</body>
+</html>
